@@ -39,6 +39,15 @@
       <HintPath>..\packages\log4net.2.0.7\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Synapse.Common">
+      <HintPath>..\..\synapse.core.net\Synapse.Common\bin\Debug\Synapse.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Synapse.ControllerService.HttpClient">
+      <HintPath>..\..\synapse.controller.net\Synapse.ControllerService.HttpClient\bin\Debug\Synapse.ControllerService.HttpClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Synapse.Core">
+      <HintPath>..\..\synapse.core.net\Synapse.Core\bin\Debug\Synapse.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -69,20 +78,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Synapse.Common\Synapse.Common.csproj">
-      <Project>{683170de-f380-4f2e-8b91-91c7c9180b2b}</Project>
-      <Name>Synapse.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Synapse.ControllerService.HttpClient\Synapse.ControllerService.HttpClient.csproj">
-      <Project>{059d8c9c-6397-422c-9ae1-9206a6c3d324}</Project>
-      <Name>Synapse.ControllerService.HttpClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Synapse.Core\Synapse.Core.csproj">
-      <Project>{4464700a-50ba-4b62-bd7e-16628fda8b94}</Project>
-      <Name>Synapse.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SynapseNodeService.resx">
