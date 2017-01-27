@@ -2,6 +2,8 @@
 using Synapse.Core;
 using Synapse.Core.Runtime;
 using System.Collections.Generic;
+using System.Text;
+using Synapse.Common.WebApi;
 
 namespace Synapse.Services
 {
@@ -40,7 +42,20 @@ namespace Synapse.Services
 
         public ExecuteResult StartPlan(string planInstanceId, bool dryRun, Plan plan)
         {
-            return plan.Start( null, dryRun );
+            string context = GetContext( nameof( StartPlan ),
+                nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
+
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                return plan.Start( null, dryRun );
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
         }
 
         public void StartPlanAsync(string planInstanceId, bool dryRun, Plan plan)
@@ -93,5 +108,16 @@ namespace Synapse.Services
 
         public List<string> GetCurrentQueueItems() { return _scheduler.CurrentQueue; }
         #endregion
+
+
+        string GetContext(string context, params object[] parms)
+        {
+            StringBuilder c = new StringBuilder();
+            c.Append( $"{context}(" );
+            for( int i = 0; i < parms.Length; i += 2 )
+                c.Append( $"{parms[i]}: {parms[i + 1]}, " );
+
+            return $"{c.ToString().TrimEnd( ',', ' ' )})";
+        }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
-using Synapse.Core;
 using Synapse.Common.WebApi;
-using System.Collections.Generic;
+using Synapse.Core;
+using Synapse.Core.Utilities;
 
 namespace Synapse.Services
 {
@@ -15,6 +17,40 @@ namespace Synapse.Services
         {
         }
 
+
+        public ExecuteResult StartPlanFile(int planInstanceId, bool dryRun, string filePath)
+        {
+            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
+        }
+
+        public async Task<ExecuteResult> StartPlanFileAsync(int planInstanceId, bool dryRun, string filePath)
+        {
+            if( File.Exists( filePath ) )
+            {
+                Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
+                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+            }
+            else
+                throw new FileNotFoundException( "Unable to start Plan.", filePath );
+        }
+
+        public ExecuteResult StartPlan(int planInstanceId, bool dryRun, string filePath)
+        {
+            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
+        }
+
+        public async Task<ExecuteResult> StartPlanAsync(int planInstanceId, bool dryRun, string filePath)
+        {
+            if( File.Exists( filePath ) )
+            {
+                Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
+                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+            }
+            else
+                throw new FileNotFoundException( "Unable to start Plan.", filePath );
+        }
 
         public ExecuteResult StartPlan(int planInstanceId, bool dryRun, Plan plan)
         {

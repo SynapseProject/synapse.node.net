@@ -43,8 +43,8 @@ namespace Synapse.Services.NodeService.Cli
 
         public Program()
         {
-            _methods.Add( "start", "StartPlan" );
-            _methods.Add( "s", "StartPlan" );
+            _methods.Add( "start", "StartPlanFile" );
+            _methods.Add( "s", "StartPlanFile" );
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
             _methods.Add( "drainstop", "Drainstop" );
