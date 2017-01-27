@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using Synapse.Core;
 using Synapse.Common.WebApi;
+using System.Collections.Generic;
 
 namespace Synapse.Services
 {
@@ -38,14 +39,14 @@ namespace Synapse.Services
         }
 
 
-        public void Drainstop()
+        public void Drainstop(bool shutdown)
         {
-            DrainstopAsync().Wait();
+            DrainstopAsync( shutdown ).Wait();
         }
 
-        public async Task DrainstopAsync()
+        public async Task DrainstopAsync(bool shutdown)
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=stop";
+            string requestUri = $"{_rootPath}/drainstop/?action=stop&shutdown={shutdown}";
             await GetAsync( requestUri );
         }
 
@@ -58,6 +59,30 @@ namespace Synapse.Services
         {
             string requestUri = $"{_rootPath}/drainstop/?action=unstop";
             await GetAsync( requestUri );
+        }
+
+        public bool GetIsDrainstopComplete() { return GetIsDrainstopCompleteAsync().Result; }
+
+        public async Task<bool> GetIsDrainstopCompleteAsync()
+        {
+            string requestUri = $"{_rootPath}/drainstop/?action=status";
+            return await GetAsync<bool>( requestUri );
+        }
+
+        public int GetCurrentQueueDepth() { return GetCurrentQueueDepthAsync().Result; }
+
+        public async Task<int> GetCurrentQueueDepthAsync()
+        {
+            string requestUri = $"{_rootPath}/drainstop/?action=depth";
+            return await GetAsync<int>( requestUri );
+        }
+
+        public List<string> GetCurrentQueueItems() { return GetCurrentQueueItemsAsync().Result; }
+
+        public async Task<List<string>> GetCurrentQueueItemsAsync()
+        {
+            string requestUri = $"{_rootPath}/drainstop/?action=list";
+            return await GetAsync<List<string>>( requestUri );
         }
     }
 }

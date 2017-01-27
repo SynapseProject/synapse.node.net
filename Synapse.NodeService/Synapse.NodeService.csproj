@@ -42,8 +42,8 @@
     <Reference Include="Synapse.Common">
       <HintPath>..\..\synapse.core.net\Synapse.Common\bin\Debug\Synapse.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Synapse.ControllerService.HttpClient">
-      <HintPath>..\..\synapse.controller.net\Synapse.ControllerService.HttpClient\bin\Debug\Synapse.ControllerService.HttpClient.dll</HintPath>
+    <Reference Include="Synapse.Controller.HttpClient">
+      <HintPath>..\..\synapse.controller.net\Synapse.ControllerService.HttpClient\bin\Debug\Synapse.Controller.HttpClient.dll</HintPath>
     </Reference>
     <Reference Include="Synapse.Core">
       <HintPath>..\..\synapse.core.net\Synapse.Core\bin\Debug\Synapse.Core.dll</HintPath>

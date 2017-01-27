@@ -14,6 +14,8 @@ namespace Synapse.Services
             InitPlanScheduler();
         }
 
+        public static Action DrainstopCallback { get; set; }
+
         public static void InitPlanScheduler()
         {
             if( _scheduler == null )
@@ -66,11 +68,16 @@ namespace Synapse.Services
             SynapseNodeService.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
         }
 
-        public void Drainstop()
+        public void Drainstop(bool shutdown)
         {
-            SynapseNodeService.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+            SynapseNodeService.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
             _scheduler.Drainstop();
             SynapseNodeService.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+            if( shutdown )
+            {
+                SynapseNodeService.Logger.Info( $"Drainstop initiating Shutdown." );
+                DrainstopCallback?.Invoke();
+            }
         }
 
         public void Undrainstop()

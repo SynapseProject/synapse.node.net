@@ -28,6 +28,7 @@ namespace Synapse.Services
         public bool SerializeResultPlan { get; set; }
         public bool ValidatePlanSignature { get; set; }
         public string ControllerServiceUrl { get; set; }
+        public string WebApiPort { get; set; } = "8000";
 
         public string GetResolvedAuditLogRootPath()
         {

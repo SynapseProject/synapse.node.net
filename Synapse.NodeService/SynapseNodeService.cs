@@ -14,7 +14,6 @@ namespace Synapse.Services
 {
     public partial class SynapseNodeService : ServiceBase
     {
-        //LogUtility _logUtil = new LogUtility();
         public static ILog Logger = LogManager.GetLogger( "SynapseNodeServer" );
         public static SynapseNodeConfig Config = null;
 
@@ -26,31 +25,18 @@ namespace Synapse.Services
             Config = SynapseNodeConfig.Deserialze();
 
             InitializeComponent();
-            this.ServiceName = "Synapse.Node";
         }
-
-        //public void InitializeLogger()
-        //{
-        //    string logRootPath = System.IO.Directory.CreateDirectory( Config.ServiceLogRootPath ).FullName;
-        //    string logFilePath = $"{logRootPath}\\Synapse.Node.log";
-        //    _logUtil.InitDefaultLogger( "SynapseNodeServer", "SynapseNodeServer", logFilePath, Config.Log4NetConversionPattern, "DEBUG" );
-        //    Logger = _logUtil._logger;
-        //}
 
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
-            InstallService( args );
-
 #if DEBUG
-            SynapseNodeService s = new SynapseNodeService();
-            s.OnStart( null );
-            Thread.Sleep( Timeout.Infinite );
-            s.OnStop();
-#else
-			ServiceBase.Run( new SynapseNodeService() );
+            RunConsole();
 #endif
+
+            InstallService( args ); //only runs RELEASE
+            RunService(); //only runs RELEASE
         }
 
         /// <summary>
@@ -84,6 +70,28 @@ namespace Synapse.Services
                 }
         }
 
+        [Conditional( "RELEASE" )]
+        public static void RunService()
+        {
+            ServiceBase.Run( new SynapseNodeService() );
+        }
+
+        public static void RunConsole()
+        {
+            ConsoleColor current = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine( "Starting Synapse.Node: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.ForegroundColor = current;
+
+            using( SynapseNodeService s = new SynapseNodeService() )
+            {
+                s.OnStart( null );
+                Thread.Sleep( Timeout.Infinite );
+                s.OnStop();
+            }
+            Console.WriteLine( "Terminating Synapse.Node." );
+        }
+
         protected override void OnStart(string[] args)
         {
             try
@@ -96,6 +104,7 @@ namespace Synapse.Services
                     _serviceHost.Close();
 
                 SynapseNodeServer.InitPlanScheduler();
+                SynapseNodeServer.DrainstopCallback = () => StopCallback();
 
                 _serviceHost = new ServiceHost( typeof( SynapseNodeServer ) );
                 _serviceHost.Open();
@@ -113,15 +122,31 @@ namespace Synapse.Services
                 WriteEventLog( msg );
 
                 this.Stop();
-                Environment.Exit( 99 );
+                Environment.Exit( 1 );
             }
+        }
+
+        void StopCallback()
+        {
+            this.Stop();
+            Environment.Exit( 0 );
         }
 
         protected override void OnStop()
         {
             Logger.Info( ServiceStatus.Stopping );
-            if( _serviceHost != null )
-                _serviceHost.Close();
+
+            try
+            {
+                if( _serviceHost != null )
+                    _serviceHost.Close();
+            }
+            catch( Exception ex )
+            {
+                Logger.Fatal( ex.Message );
+                WriteEventLog( ex.Message );
+            }
+
             Logger.Info( ServiceStatus.Stopped );
         }
 
@@ -148,6 +173,9 @@ namespace Synapse.Services
 
             string msg = ((Exception)e.ExceptionObject).Message + ((Exception)e.ExceptionObject).InnerException.Message;
 
+            Logger.Error( ((Exception)e.ExceptionObject).Message );
+            Logger.Error( msg );
+
             try
             {
                 if( !EventLog.SourceExists( source ) )
@@ -171,7 +199,7 @@ namespace Synapse.Services
 
         void WriteEventLog(string msg, EventLogEntryType entryType = EventLogEntryType.Error)
         {
-            string source = "SynapseService";
+            string source = "SynapseNodeService";
             string log = "Application";
 
             try
@@ -206,3 +234,13 @@ namespace Synapse.Services
         #endregion
     }
 }
+
+
+//LogUtility _logUtil = new LogUtility();
+//public void InitializeLogger()
+//{
+//    string logRootPath = System.IO.Directory.CreateDirectory( Config.ServiceLogRootPath ).FullName;
+//    string logFilePath = $"{logRootPath}\\Synapse.Node.log";
+//    _logUtil.InitDefaultLogger( "SynapseNodeServer", "SynapseNodeServer", logFilePath, Config.Log4NetConversionPattern, "DEBUG" );
+//    Logger = _logUtil._logger;
+//}
