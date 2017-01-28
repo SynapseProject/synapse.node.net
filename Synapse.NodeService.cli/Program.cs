@@ -43,6 +43,10 @@ namespace Synapse.Services.NodeService.Cli
 
         public Program()
         {
+            _methods.Add( "hello", "Hello" );
+            _methods.Add( "hi", "Hello" );
+            _methods.Add( "whoami", "WhoAmI" );
+            _methods.Add( "who", "WhoAmI" );
             _methods.Add( "start", "StartPlanFile" );
             _methods.Add( "s", "StartPlanFile" );
             _methods.Add( "cancel", "CancelPlan" );
@@ -153,6 +157,8 @@ namespace Synapse.Services.NodeService.Cli
             Console.WriteLine( "{0,-15}Parm help: synapse.node.cli {1}httpAction{2} help.", "", "{", "}" );
             Console.WriteLine( "{0,-15}URL: url:http://{1}host:port{2}/synapse/node\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );
+            Console.WriteLine( "    - Hello|hi           Returns 'Hello World'.", "" );
+            Console.WriteLine( "    - WhoAmI|who         Returns NodeServer User Context.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
             Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.", "" );
             Console.WriteLine( "    - Drainstop|dst      Prevents the node from receiving incoming requests;", "" );

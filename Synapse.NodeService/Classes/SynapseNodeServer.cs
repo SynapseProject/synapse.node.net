@@ -32,12 +32,16 @@ namespace Synapse.Services
 
         public string Hello()
         {
+            string context = GetContext( nameof( Hello ) );
+            SynapseNodeService.Logger.Debug( context );
             return "Hello from SynapseNodeServer, World!";
         }
 
-        public string WhosHere()
+        public string WhoAmI()
         {
-            return "WhosHere from SynapseNodeServer, World!";
+            string context = GetContext( nameof( WhoAmI ) );
+            SynapseNodeService.Logger.Debug( context );
+            return "WhoAmI from SynapseNodeServer, World!";
         }
 
         public ExecuteResult StartPlan(string planInstanceId, bool dryRun, Plan plan)
@@ -60,22 +64,44 @@ namespace Synapse.Services
 
         public void StartPlanAsync(string planInstanceId, bool dryRun, Plan plan)
         {
-            int planInstId = int.Parse( planInstanceId );
+            string context = GetContext( nameof( StartPlanAsync ),
+                nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
 
-            SynapseNodeService.Logger.Info( $"StartPlanAsync: InstanceId: {planInstId}, Name: {plan.Name}" );
-
-            PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, planInstId );
-            _scheduler.StartPlan( p );  //_scheduler.StartPlan( null, dryRun, plan );
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                int planInstId = int.Parse( planInstanceId );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, planInstId );
+                _scheduler.StartPlan( p );  //_scheduler.StartPlan( null, dryRun, plan );
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
         }
 
         public void CancelPlan(string planInstanceId)
         {
-            int planInstId = int.Parse( planInstanceId );
-            bool found = _scheduler.CancelPlan( planInstId );
-            string foundMsg = found ?
-                "Found executing Plan and signaled Cancel request." :
-                "Could not find executing Plan; Plan may have already completed execution.";
-            SynapseNodeService.Logger.Info( $"CancelPlan {planInstId}: {foundMsg}" );
+            string context = GetContext( nameof( CancelPlan ), nameof( planInstanceId ), planInstanceId );
+
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                int planInstId = int.Parse( planInstanceId );
+                bool found = _scheduler.CancelPlan( planInstId );
+                string foundMsg = found ?
+                    "Found executing Plan and signaled Cancel request." :
+                    "Could not find executing Plan; Plan may have already completed execution.";
+                SynapseNodeService.Logger.Info( $"CancelPlan {planInstId}: {foundMsg}" );
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
         }
 
         private static void Scheduler_PlanCompleted(object sender, PlanCompletedEventArgs e)
@@ -85,28 +111,97 @@ namespace Synapse.Services
 
         public void Drainstop(bool shutdown)
         {
-            SynapseNodeService.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
-            _scheduler.Drainstop();
-            SynapseNodeService.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
-            if( shutdown )
+            string context = GetContext( nameof( Drainstop ), nameof( shutdown ), shutdown );
+
+            try
             {
-                SynapseNodeService.Logger.Info( $"Drainstop initiating Shutdown." );
-                DrainstopCallback?.Invoke();
+                SynapseNodeService.Logger.Debug( context );
+                SynapseNodeService.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
+                _scheduler.Drainstop();
+                SynapseNodeService.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                if( shutdown )
+                {
+                    SynapseNodeService.Logger.Info( $"Drainstop initiating Shutdown." );
+                    DrainstopCallback?.Invoke();
+                }
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
             }
         }
 
         public void Undrainstop()
         {
-            SynapseNodeService.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
-            _scheduler.Undrainstop();
-            SynapseNodeService.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+            string context = GetContext( nameof( Undrainstop ));
+
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                SynapseNodeService.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                _scheduler.Undrainstop();
+                SynapseNodeService.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
         }
 
-        public bool GetIsDrainstopComplete() { return _scheduler.IsDrainstopComplete; }
+        public bool GetIsDrainstopComplete()
+        {
+            string context = GetContext( nameof( GetIsDrainstopComplete ) );
 
-        public int GetCurrentQueueDepth() { return _scheduler.CurrentQueueDepth; }
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                return _scheduler.IsDrainstopComplete;
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
-        public List<string> GetCurrentQueueItems() { return _scheduler.CurrentQueue; }
+        public int GetCurrentQueueDepth()
+        {
+            string context = GetContext( nameof( GetCurrentQueueDepth ) );
+
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                return _scheduler.CurrentQueueDepth;
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        public List<string> GetCurrentQueueItems()
+        {
+            string context = GetContext( nameof( GetCurrentQueueItems ) );
+
+            try
+            {
+                SynapseNodeService.Logger.Debug( context );
+                return _scheduler.CurrentQueue;
+            }
+            catch( Exception ex )
+            {
+                SynapseNodeService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
         #endregion
 
 
