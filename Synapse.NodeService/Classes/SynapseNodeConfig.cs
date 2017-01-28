@@ -13,21 +13,18 @@ namespace Synapse.Services
     {
         public SynapseNodeConfig()
         {
-            Log4NetConversionPattern = "%d{ISO8601}|%-5p|(%t)|%m%n";
-            SerializeResultPlan = true;
-            ValidatePlanSignature = true;
         }
 
         public static readonly string CurrentPath = $"{Path.GetDirectoryName( typeof( SynapseNodeConfig ).Assembly.Location )}";
         public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseNodeConfig ).Assembly.Location )}\\Synapse.Node.config.yaml";
 
-        public int MaxServerThreads { get; set; }
-        public string AuditLogRootPath { get; set; }
-        public string ServiceLogRootPath { get; set; }
-        public string Log4NetConversionPattern { get; set; }
-        public bool SerializeResultPlan { get; set; }
-        public bool ValidatePlanSignature { get; set; }
-        public string ControllerServiceUrl { get; set; }
+        public int MaxServerThreads { get; set; } = 10;
+        public string AuditLogRootPath { get; set; } = @".\Logs";
+        public string ServiceLogRootPath { get; set; } = @".\Logs";
+        public string Log4NetConversionPattern { get; set; } = "%d{ISO8601}|%-5p|(%t)|%m%n";
+        public bool SerializeResultPlan { get; set; } = true;
+        public bool ValidatePlanSignature { get; set; } = true;
+        public string ControllerServiceUrl { get; set; } = "http://localhost:8008/synapse/execute";
         public string WebApiPort { get; set; } = "8000";
 
         public string GetResolvedAuditLogRootPath()
@@ -84,6 +81,9 @@ namespace Synapse.Services
 
         public static SynapseNodeConfig Deserialze()
         {
+            if( !File.Exists( FileName ) )
+                new SynapseNodeConfig().Serialize();
+
             return YamlHelpers.DeserializeFile<SynapseNodeConfig>( FileName );
         }
     }
