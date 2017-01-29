@@ -58,6 +58,9 @@ namespace Synapse.Services
             if( SynapseNodeService.Config.SerializeResultPlan )
                 File.WriteAllText( $"{_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml", Plan.ResultPlan.ToYaml() );
 
+            //send final message home
+            _controllerService.SetPlanStatusAsync( Plan.Name, PlanInstanceId, Plan.ResultPlan );
+
             callback?.Invoke( this );
         }
 
@@ -77,8 +80,8 @@ namespace Synapse.Services
             if( _wantsCancel )
                 e.Cancel = true;
 
-            //todo: send a message home
-            _controllerService.SetPlanStatusAsync( Plan.Name, PlanInstanceId, e.SerializeSimple() );
+            //send intermediate message home
+            _controllerService.SetPlanActionStatusAsync( Plan.Name, PlanInstanceId, e.ToActionItem() );
         }
 
         private void Plan_LogMessage(object sender, LogMessageEventArgs e)

@@ -35,29 +35,12 @@ namespace Synapse.Services
         }
 
 
-        public ExecuteResult StartPlanFile(int planInstanceId, bool dryRun, string filePath)
+        public ExecuteResult StartPlanFile(long planInstanceId, bool dryRun, string filePath)
         {
-            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
+            return StartPlanFileAsync( planInstanceId, dryRun, filePath ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanFileAsync(int planInstanceId, bool dryRun, string filePath)
-        {
-            if( File.Exists( filePath ) )
-            {
-                Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
-                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
-                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
-            }
-            else
-                throw new FileNotFoundException( "Unable to start Plan.", filePath );
-        }
-
-        public ExecuteResult StartPlan(int planInstanceId, bool dryRun, string filePath)
-        {
-            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
-        }
-
-        public async Task<ExecuteResult> StartPlanAsync(int planInstanceId, bool dryRun, string filePath)
+        public async Task<ExecuteResult> StartPlanFileAsync(long planInstanceId, bool dryRun, string filePath)
         {
             if( File.Exists( filePath ) )
             {
@@ -69,12 +52,29 @@ namespace Synapse.Services
                 throw new FileNotFoundException( "Unable to start Plan.", filePath );
         }
 
-        public ExecuteResult StartPlan(int planInstanceId, bool dryRun, Plan plan)
+        public ExecuteResult StartPlan(long planInstanceId, bool dryRun, string filePath)
+        {
+            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
+        }
+
+        public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, string filePath)
+        {
+            if( File.Exists( filePath ) )
+            {
+                Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
+                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+            }
+            else
+                throw new FileNotFoundException( "Unable to start Plan.", filePath );
+        }
+
+        public ExecuteResult StartPlan(long planInstanceId, bool dryRun, Plan plan)
         {
             return StartPlanAsync( planInstanceId, dryRun, plan ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanAsync(int planInstanceId, bool dryRun, Plan plan)
+        public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, Plan plan)
         {
             string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
             return await PostAsync<Plan, ExecuteResult>( plan, requestUri );

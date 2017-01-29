@@ -82,6 +82,11 @@ namespace Synapse.Services
             }
         }
 
+        private static void Scheduler_PlanCompleted(object sender, PlanCompletedEventArgs e)
+        {
+            SynapseNodeService.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
+        }
+
         public void CancelPlan(string planInstanceId)
         {
             string context = GetContext( nameof( CancelPlan ), nameof( planInstanceId ), planInstanceId );
@@ -102,11 +107,6 @@ namespace Synapse.Services
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
-        }
-
-        private static void Scheduler_PlanCompleted(object sender, PlanCompletedEventArgs e)
-        {
-            SynapseNodeService.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
         }
 
         public void Drainstop(bool shutdown)
