@@ -52,6 +52,7 @@ namespace Synapse.Services
             try
             {
                 SynapseNodeService.Logger.Debug( context );
+                plan.InstanceId = long.Parse( planInstanceId );
                 return plan.Start( null, dryRun );
             }
             catch( Exception ex )
@@ -70,8 +71,8 @@ namespace Synapse.Services
             try
             {
                 SynapseNodeService.Logger.Debug( context );
-                int planInstId = int.Parse( planInstanceId );
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, planInstId );
+                plan.InstanceId = long.Parse( planInstanceId );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
                 _scheduler.StartPlan( p );  //_scheduler.StartPlan( null, dryRun, plan );
             }
             catch( Exception ex )

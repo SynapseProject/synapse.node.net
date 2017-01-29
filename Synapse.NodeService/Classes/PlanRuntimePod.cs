@@ -18,7 +18,7 @@ namespace Synapse.Services
         ControllerServiceHttpApiClient _controllerService =
             new ControllerServiceHttpApiClient( SynapseNodeService.Config.ControllerServiceUrl );
 
-        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicData = null, int planInstanceId = 0)
+        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicData = null, long planInstanceId = 0)
         {
             Plan = plan;
             IsDryRun = isDryRun;
@@ -72,7 +72,7 @@ namespace Synapse.Services
         public Plan Plan { get; }
         public bool IsDryRun { get; }
         public Dictionary<string, string> DynamicData { get; }
-        public int PlanInstanceId { get; }
+        public long PlanInstanceId { get; }
 
 
         private void Plan_Progress(object sender, HandlerProgressCancelEventArgs e)
