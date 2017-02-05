@@ -9,8 +9,65 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallService(bool install, out string message)
+        public static bool InstallAndStartService(Dictionary<string, string> configValues, out string message)
         {
+            message = null;
+
+            bool ok = InstallService( install: true, configValues: configValues, message: out message );
+
+            if( ok && !(configValues.ContainsKey( "run" ) && configValues["run"] == "false") )
+                try
+                {
+                    string sn = SynapseNodeConfig.Deserialze().ServiceName;
+                    Console.Write( $"\r\nStarting {sn}... " );
+                    ServiceController sc = new ServiceController( sn );
+                    sc.Start();
+                    sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
+                    Console.WriteLine( sc.Status );
+                }
+                catch( Exception ex )
+                {
+                    Console.WriteLine();
+                    message = ex.Message;
+                    ok = false;
+                }
+
+            return ok;
+        }
+
+        public static bool StopAndUninstallService(out string message)
+        {
+            bool ok = true;
+            message = null;
+
+            try
+            {
+                string sn = SynapseNodeConfig.Deserialze().ServiceName;
+                ServiceController sc = new ServiceController( sn );
+                if( sc.Status == ServiceControllerStatus.Running )
+                {
+                    Console.WriteLine( $"\r\nStopping {sn}..." );
+                    sc.Stop();
+                    sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
+                }
+            }
+            catch( Exception ex )
+            {
+                message = ex.Message;
+                ok = false;
+            }
+
+            if( ok )
+                ok = InstallService( install: false, configValues: null, message: out message );
+
+            return ok;
+        }
+
+        public static bool InstallService(bool install, Dictionary<string, string> configValues, out string message)
+        {
+            if( configValues != null )
+                SynapseNodeConfig.Configure( configValues );
+
             Type type = typeof( SynapseNodeServiceInstaller );
 
             string logFile = $"Synapse.Node.InstallLog.txt";
@@ -49,15 +106,17 @@ namespace Synapse.Services
             ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
             ServiceInstaller serviceInstaller = new ServiceInstaller();
 
+            SynapseNodeConfig config = SynapseNodeConfig.Deserialze();
+
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
 
-            serviceInstaller.DisplayName = "Synapse Node Service";
+            serviceInstaller.DisplayName = config.ServiceDisplayName;
             serviceInstaller.Description = "Runs Plans, proxies to other Synapse Nodes.  Use 'Synapse.Node /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             //must be the same as what was set in Program's constructor
-            serviceInstaller.ServiceName = "Synapse.Node";
+            serviceInstaller.ServiceName = config.ServiceName;
             this.Installers.Add( processInstaller );
             this.Installers.Add( serviceInstaller );
         }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text;
 
-using Synapse.Core;
-using Synapse.Services;
 
 namespace Synapse.Services.NodeService.Cli
 {
@@ -116,20 +114,32 @@ namespace Synapse.Services.NodeService.Cli
                 case "install":
                 {
                     string message = string.Empty;
-                    if( !InstallUtility.InstallService( install: true, message: out message ) )
+                    bool error = false;
+                    Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
+                    if( !InstallUtility.InstallAndStartService( configValues: values, message: out message ) )
+                    {
                         Console.WriteLine( message );
+                        Environment.Exit( 1 );
+                    }
+
                     break;
                 }
                 case "uninstall":
                 {
                     string message = string.Empty;
-                    if( !InstallUtility.InstallService( install: false, message: out message ) )
+                    if( !InstallUtility.StopAndUninstallService( out message ) )
+                    {
                         Console.WriteLine( message );
+                        Environment.Exit( 1 );
+                    }
+
                     break;
                 }
                 default:
                 {
                     WriteHelpAndExit( "Unknown service action." );
+                    Environment.Exit( 1 );
+
                     break;
                 }
             }
@@ -139,6 +149,13 @@ namespace Synapse.Services.NodeService.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
+            Dictionary<string, string> cdf = SynapseNodeConfig.GetConfigDefaultValues();
+            StringBuilder df = new StringBuilder();
+            df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
+            foreach( string key in cdf.Keys )
+                df.AppendLine( $"                 - {key}:{cdf[key]}" );
+            df.AppendLine( $"                 - Run:true  (Optionally Starts the Windows Service)\r\n" );
+
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             ConsoleColor defaultColor = Console.ForegroundColor;
@@ -155,7 +172,8 @@ namespace Synapse.Services.NodeService.Cli
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
             Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
             Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
-            Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service run\r\n", "" );
+            Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service run", "" );
+            Console.WriteLine( df.ToString() );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}Parm help: synapse.node.cli {1}httpAction{2} help.\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );

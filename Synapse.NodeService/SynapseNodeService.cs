@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceProcess;
-using System.Windows.Forms;
+using System.Text;
 using System.Threading;
-
-using Synapse.Core.DataAccessLayer;
-using Synapse.Services.Common;
+using System.Windows.Forms;
 
 using log4net;
+
+using Synapse.Common.CmdLine;
+using Synapse.Core.DataAccessLayer;
+using Synapse.Services.Common;
 
 namespace Synapse.Services
 {
@@ -25,6 +28,8 @@ namespace Synapse.Services
             Config = SynapseNodeConfig.Deserialze();
 
             InitializeComponent();
+
+            this.ServiceName = Config.ServiceName;
         }
 
         public static void Main(string[] args)
@@ -55,9 +60,16 @@ namespace Synapse.Services
 
                     string arg0 = args[0].ToLower();
                     if( arg0 == "/install" || arg0 == "/i" )
-                        ok = InstallUtility.InstallService( install: true, message: out message );
+                    {
+                        bool error = false;
+                        Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
+                        if( !error )
+                            ok = InstallUtility.InstallAndStartService( configValues: values, message: out message );
+                    }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
-                        ok = InstallUtility.InstallService( install: false, message: out message );
+                    {
+                        ok = InstallUtility.StopAndUninstallService( out message );
+                    }
 
                     if( !ok )
                         WriteHelpAndExit( message );
@@ -219,7 +231,14 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            string msg = $"synapse.node.exe, Version: {typeof( SynapseNodeService ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.node.exe /install | /uninstall";
+            Dictionary<string, string> cdf = SynapseNodeConfig.GetConfigDefaultValues();
+            StringBuilder df = new StringBuilder();
+            df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
+            foreach( string key in cdf.Keys )
+                df.AppendLine( $" - {key}:{cdf[key]}" );
+            df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
+
+            string msg = $"synapse.node.exe, Version: {typeof( SynapseNodeService ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.node.exe /install | /uninstall\r\n\r\n{df.ToString()}";
 
             if( haveError )
             {
