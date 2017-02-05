@@ -68,8 +68,7 @@ namespace Synapse.Services
             if( configValues != null )
                 SynapseNodeConfig.Configure( configValues );
 
-            Type type = typeof( SynapseNodeServiceInstaller );
-
+            string fullFilePath = typeof( SynapseNodeServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Node.InstallLog.txt";
 
             List<string> args = new List<string>();
@@ -77,7 +76,7 @@ namespace Synapse.Services
             args.Add( $"/logfile={logFile}" );
             args.Add( "/LogToConsole=true" );
             args.Add( "/ShowCallStack=true" );
-            args.Add( type.Assembly.Location );
+            args.Add( fullFilePath );
 
             if( !install )
                 args.Add( "/u" );
@@ -90,7 +89,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                string path = Path.GetDirectoryName( type.Assembly.Location );
+                string path = Path.GetDirectoryName( fullFilePath );
                 File.AppendAllText( $"{path}\\{logFile}", ex.Message );
                 message = ex.Message;
                 return false;
