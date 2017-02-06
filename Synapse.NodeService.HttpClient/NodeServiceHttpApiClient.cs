@@ -126,7 +126,7 @@ namespace Synapse.Services
 
         public async Task<int> GetCurrentQueueDepthAsync()
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=depth";
+            string requestUri = $"{_rootPath}/queue/?action=depth";
             return await GetAsync<int>( requestUri );
         }
 
@@ -134,7 +134,7 @@ namespace Synapse.Services
 
         public async Task<List<string>> GetCurrentQueueItemsAsync()
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=list";
+            string requestUri = $"{_rootPath}/queue/?action=list";
             return await GetAsync<List<string>>( requestUri );
         }
     }
